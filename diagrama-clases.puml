@@ -1,0 +1,125 @@
+@startuml DiagramaClases
+title Diagrama de Clases - Sistema Multiagente de Gestión Digital
+
+'==================== CLASE BASE AGENTE ====================
+abstract class Agente {
+  +idAgente: String
+  +nombre: String
+  +rol: String
+  +tipo: String
+  +estado: String
+  --
+  +percibir(entorno: Object): void
+  +decidir(): void
+  +actuar(): void
+  +enviarMensaje(m: Mensaje): void
+  +recibirMensaje(m: Mensaje): void
+}
+
+'==================== SUBCLASES DE AGENTE ====================
+class AgenteGestorCorreos {
+  -bandejaEntradaRef: String
+  --
+  +clasificarCorreo(correo: Object): void
+  +extraerSolicitud(correo: Object): Solicitud
+  +generarBorradorRespuesta(correo: Object): String
+}
+
+class AgenteGestorCalendario {
+  -referenciaCalendario: String
+  --
+  +crearEvento(datosEvento: Object): void
+  +verificarConflicto(datosEvento: Object): boolean
+  +proponerHorarioAlternativo(datosEvento: Object): Object
+  +confirmarEvento(datosEvento: Object): void
+}
+
+class AgenteGestorDocumentos {
+  -repositorioDocumentos: String
+  --
+  +crearMinuta(datosReunion: Object): Documento
+  +crearInforme(datosInforme: Object): Documento
+  +generarPlantilla(tipo: String): Documento
+}
+
+class AgenteGestorRegistros {
+  -hojaRegistros: String
+  -criteriosPrioridad: Object
+  --
+  +registrarEvento(datosEvento: Object): void
+  +registrarDocumento(doc: Documento): void
+  +registrarCorreoProcesado(datosCorreo: Object): void
+  +consultarRegistros(filtro: Object): Object
+  +evaluarPrioridad(datosEvento: Object): int
+}
+
+Agente <|-- AgenteGestorCorreos
+Agente <|-- AgenteGestorCalendario
+Agente <|-- AgenteGestorDocumentos
+Agente <|-- AgenteGestorRegistros
+
+'==================== CLASE MENSAJE ====================
+class Mensaje {
+  +idMensaje: String
+  +performativa: String
+  +remitente: Agente
+  +destinatario: Agente
+  +contenido: Object
+  +marcaTiempo: Date
+  --
+  +construirContenido(datos: Object): void
+  +validar(): boolean
+}
+
+Agente "1" o-- "*" Mensaje : envía/recibe >
+
+'==================== CLASES DE SERVICIOS EXTERNOS ====================
+class ServicioCorreo {
+  +leerCorreos(): List<Object>
+  +enviarCorreo(destinatario: String, asunto: String, cuerpo: String): void
+}
+
+class ServicioCalendario {
+  +crearEvento(datosEvento: Object): void
+  +actualizarEvento(idEvento: String, datosEvento: Object): void
+  +obtenerEventos(rango: Object): List<Object>
+}
+
+class ServicioDocumentos {
+  +crearDocumento(titulo: String, contenido: String): Documento
+  +actualizarDocumento(idDoc: String, contenido: String): void
+}
+
+class ServicioSheets {
+  +insertarRegistro(datos: Object): void
+  +consultarRegistros(filtro: Object): List<Object>
+}
+
+class Documento {
+  +idDocumento: String
+  +titulo: String
+  +contenido: String
+  +url: String
+}
+
+'==================== CLASE USUARIO ====================
+class Usuario {
+  +idUsuario: String
+  +nombre: String
+  +email: String
+  --
+  +enviarCorreo(asunto: String, cuerpo: String): void
+  +consultarAgenda(): void
+}
+
+'==================== RELACIONES CON SERVICIOS ====================
+Usuario --> ServicioCorreo : usa
+AgenteGestorCorreos --> ServicioCorreo : usa
+AgenteGestorCalendario --> ServicioCalendario : usa
+AgenteGestorDocumentos --> ServicioDocumentos : usa
+AgenteGestorRegistros --> ServicioSheets : usa
+
+AgenteGestorDocumentos --> Documento : crea >
+ServicioDocumentos --> Documento : gestiona >
+
+@enduml
