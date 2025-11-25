@@ -1,0 +1,50 @@
+@startuml EntornoSMA
+title Diagrama de Entorno del Sistema Multiagente
+
+' Ajustes para mejorar legibilidad de líneas
+left to right direction
+skinparam linetype ortho
+skinparam ranksep 60
+skinparam nodesep 40
+
+rectangle "Entorno Externo" as EXT {
+  actor Usuario as U
+  package "Servicios Digitales" as SDIG {
+    component "Servicio de Correo" as SC
+    component "Servicio de Calendario" as SCal
+    component "Servicio de Documentos" as SDoc
+    component "Servicio Sheets" as SS
+  }
+}
+
+rectangle "Sistema Multiagente (SMA)" as SMA {
+  component "Agente Correos" as AC
+  component "Agente Calendario" as AGC
+  component "Agente Documentos" as AD
+  component "Agente Registros" as AR
+}
+
+' Interacción usuario – correo (principal)
+U --> SC : Envío / recepción
+
+' Consolidación de relaciones externas bidireccionales
+SC <--> AC : Entrante / Borradores
+SCal <--> AGC : Eventos / Confirmaciones
+SDoc <--> AD : Crear / Guardar
+SS <--> AR : Insertar / Consultar
+
+' Flujos internos entre agentes
+AC --> AGC : Solicitud reunión
+AC --> AD  : Solicitud documento
+AGC --> AD : Datos de reunión
+AGC --> AR : Registrar reunión
+AD  --> AR : Registrar documento
+AC  --> AR : Registrar correo
+
+legend left
+  Flechas dobles (<-->) indican interacción continua (ida y vuelta)
+  Flechas simples (->) indican flujo unidireccional de solicitud o registro
+  Layout left-to-right y líneas ortogonales para reducir cruces
+end legend
+
+@enduml
